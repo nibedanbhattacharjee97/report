@@ -7,40 +7,40 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import datetime
 
-
-st.set_page_config(page_title="Indian Stock AI", layout="wide")
+# Page config
+st.set_page_config(page_title="Indian Stock Market AI", layout="wide")
 st.title("📊 Indian Stock Market AI Analysis (Last 5 Years)")
-st.markdown("Use this tool to analyze and predict trends for all major Indian stocks using historical data and AI.")
+st.markdown("Use this tool to analyze and predict trends for major Indian stocks using historical data and AI.")
 
-
+# Load stock list from local CSV
 @st.cache_data
 def load_stock_list():
-    return pd.read_excel("nse_stocks.xlsx")  
+    return pd.read_csv("nse_stocks.csv")  # Columns: Company Name, Ticker
 
 stocks = load_stock_list()
 
 selected = st.multiselect(
     "Select companies to analyze",
     options=stocks['Company Name'].tolist(),
-    default=["Reliance"]
+    default=["Reliance", "TCS"]
 )
 
-
+# Function to fetch 5-year stock data
 def fetch_stock_data(ticker):
     end = datetime.datetime.today()
-    start = end - datetime.timedelta(days=5*365)
+    start = end - datetime.timedelta(days=5 * 365)
     data = yf.download(ticker, start=start, end=end)
     data.dropna(inplace=True)
     return data
 
-
+# Loop over selected companies
 for company in selected:
     ticker = stocks.loc[stocks['Company Name'] == company, 'Ticker'].values[0]
     st.subheader(f"📈 {company} ({ticker})")
 
     data = fetch_stock_data(ticker)
 
-
+    # AI Prediction
     df = data.copy()
     df['Return'] = df['Close'].pct_change()
     df['Target'] = (df['Return'].shift(-1) > 0).astype(int)
@@ -51,7 +51,6 @@ for company in selected:
     if len(df) > 100:
         X = df[['Open', 'High', 'Low', 'Close', 'Volume']]
         y = df['Target']
-
         X_train, X_test, y_train, y_test = train_test_split(X, y, shuffle=False, test_size=0.3)
         model = RandomForestClassifier()
         model.fit(X_train, y_train)
@@ -68,26 +67,35 @@ for company in selected:
     else:
         st.warning("Not enough data to run prediction.")
 
-
-    st.markdown("### 📉 Close Price Trend")
-    fig, ax = plt.subplots()
-    ax.plot(data['Close'], label='Close', color='blue')
+    # Close Price Chart (Styled)
+    st.markdown("### 📉 Close Price Trend (5 Years)")
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.plot(data['Close'], label='Close Price', color='#1f77b4', linewidth=2)
+    ax.set_facecolor('#f9f9f9')
+    ax.grid(True, linestyle='--', alpha=0.5)
+    ax.set_title(f"{company} - Close Price", fontsize=14, weight='bold')
+    ax.set_ylabel("INR")
     ax.set_xlabel("Date")
-    ax.set_ylabel("Price")
-    ax.set_title(f"{company} - Close Price")
+    ax.tick_params(axis='x', rotation=45)
     ax.legend()
     st.pyplot(fig)
 
-
+    # Moving Averages Chart
     st.markdown("### 📊 Simple Moving Averages (SMA)")
+
     data['SMA20'] = data['Close'].rolling(window=20).mean()
     data['SMA50'] = data['Close'].rolling(window=50).mean()
 
-    fig2, ax2 = plt.subplots()
-    ax2.plot(data['Close'], label='Close', alpha=0.5)
-    ax2.plot(data['SMA20'], label='SMA 20', color='orange')
-    ax2.plot(data['SMA50'], label='SMA 50', color='green')
-    ax2.set_title(f"{company} - SMA")
+    fig2, ax2 = plt.subplots(figsize=(10, 4))
+    ax2.plot(data['Close'], label='Close', alpha=0.4, color='gray')
+    ax2.plot(data['SMA20'], label='SMA 20', color='#ff7f0e', linewidth=2)
+    ax2.plot(data['SMA50'], label='SMA 50', color='#2ca02c', linewidth=2)
+    ax2.set_facecolor('#f9f9f9')
+    ax2.set_title(f"{company} - SMA Comparison", fontsize=14, weight='bold')
+    ax2.set_xlabel("Date")
+    ax2.set_ylabel("INR")
+    ax2.tick_params(axis='x', rotation=45)
+    ax2.grid(True, linestyle='--', alpha=0.5)
     ax2.legend()
     st.pyplot(fig2)
 
