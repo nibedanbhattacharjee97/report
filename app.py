@@ -7,12 +7,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import datetime
 
-# Page config
+
 st.set_page_config(page_title="Indian Stock AI", layout="wide")
 st.title("📊 Indian Stock Market AI Analysis (Last 5 Years)")
 st.markdown("Use this tool to analyze and predict trends for all major Indian stocks using historical data and AI.")
 
-# Load stock list from local CSV file in the code path
+
 @st.cache_data
 def load_stock_list():
     return pd.read_excel("nse_stocks.xlsx")  
@@ -25,7 +25,7 @@ selected = st.multiselect(
     default=["Reliance", "TCS"]
 )
 
-# Function to fetch 5-year stock data
+
 def fetch_stock_data(ticker):
     end = datetime.datetime.today()
     start = end - datetime.timedelta(days=5*365)
@@ -33,14 +33,14 @@ def fetch_stock_data(ticker):
     data.dropna(inplace=True)
     return data
 
-# Loop over each selected company
+
 for company in selected:
     ticker = stocks.loc[stocks['Company Name'] == company, 'Ticker'].values[0]
     st.subheader(f"📈 {company} ({ticker})")
 
     data = fetch_stock_data(ticker)
 
-    # Plot Close Price
+
     st.markdown("**Close Price Trend**")
     fig, ax = plt.subplots()
     ax.plot(data['Close'], label='Close', color='blue')
@@ -50,7 +50,6 @@ for company in selected:
     ax.legend()
     st.pyplot(fig)
 
-    # Moving Averages
     data['SMA20'] = data['Close'].rolling(window=20).mean()
     data['SMA50'] = data['Close'].rolling(window=50).mean()
 
@@ -63,7 +62,7 @@ for company in selected:
     ax2.legend()
     st.pyplot(fig2)
 
-    # AI Prediction
+
     st.markdown("**AI-Based Trend Prediction**")
 
     df = data.copy()
@@ -71,7 +70,7 @@ for company in selected:
     df['Target'] = (df['Return'].shift(-1) > 0).astype(int)
     df.dropna(inplace=True)
 
-    if len(df) > 100:  # Only run model if we have enough data
+    if len(df) > 100:  
         X = df[['Open', 'High', 'Low', 'Close', 'Volume']]
         y = df['Target']
 
