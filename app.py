@@ -15,7 +15,7 @@ st.markdown("Use this tool to analyze and predict trends for major Indian stocks
 # Load stock list from local CSV
 @st.cache_data
 def load_stock_list():
-    return pd.read_csv("nse_stocks.csv")  # Columns: Company Name, Ticker
+    return pd.read_excel("nse_stocks.xlsx")  # Columns: Company Name, Ticker
 
 stocks = load_stock_list()
 
