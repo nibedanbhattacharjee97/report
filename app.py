@@ -40,7 +40,7 @@ for company in selected:
 
     data = fetch_stock_data(ticker)
 
-    # AI Prediction
+
     df = data.copy()
     df['Return'] = df['Close'].pct_change()
     df['Target'] = (df['Return'].shift(-1) > 0).astype(int)
