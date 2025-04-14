@@ -22,7 +22,7 @@ stocks = load_stock_list()
 selected = st.multiselect(
     "Select companies to analyze",
     options=stocks['Company Name'].tolist(),
-    default=["Reliance", "TCS"]
+    default=["Reliance"]
 )
 
 
