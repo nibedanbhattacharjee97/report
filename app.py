@@ -17,8 +17,8 @@ st.markdown("Use this tool to analyze and predict trends for all major Indian st
 def load_stock_list():
     return pd.read_excel("nse_stocks.xlsx")  
 
-
 stocks = load_stock_list()
+
 selected = st.multiselect(
     "Select companies to analyze",
     options=stocks['Company Name'].tolist(),
@@ -41,36 +41,14 @@ for company in selected:
     data = fetch_stock_data(ticker)
 
 
-    st.markdown("**Close Price Trend**")
-    fig, ax = plt.subplots()
-    ax.plot(data['Close'], label='Close', color='blue')
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Price")
-    ax.set_title(f"{company} - Close Price")
-    ax.legend()
-    st.pyplot(fig)
-
-    data['SMA20'] = data['Close'].rolling(window=20).mean()
-    data['SMA50'] = data['Close'].rolling(window=50).mean()
-
-    st.markdown("**Simple Moving Averages**")
-    fig2, ax2 = plt.subplots()
-    ax2.plot(data['Close'], label='Close', alpha=0.5)
-    ax2.plot(data['SMA20'], label='SMA 20', color='orange')
-    ax2.plot(data['SMA50'], label='SMA 50', color='green')
-    ax2.set_title(f"{company} - SMA")
-    ax2.legend()
-    st.pyplot(fig2)
-
-
-    st.markdown("**AI-Based Trend Prediction**")
-
     df = data.copy()
     df['Return'] = df['Close'].pct_change()
     df['Target'] = (df['Return'].shift(-1) > 0).astype(int)
     df.dropna(inplace=True)
 
-    if len(df) > 100:  
+    st.markdown("### 🤖 AI-Based Trend Prediction")
+
+    if len(df) > 100:
         X = df[['Open', 'High', 'Low', 'Close', 'Volume']]
         y = df['Target']
 
@@ -89,5 +67,28 @@ for company in selected:
             st.error("📉 AI Prediction: Expecting **DOWN** trend tomorrow.")
     else:
         st.warning("Not enough data to run prediction.")
-    
+
+
+    st.markdown("### 📉 Close Price Trend")
+    fig, ax = plt.subplots()
+    ax.plot(data['Close'], label='Close', color='blue')
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Price")
+    ax.set_title(f"{company} - Close Price")
+    ax.legend()
+    st.pyplot(fig)
+
+
+    st.markdown("### 📊 Simple Moving Averages (SMA)")
+    data['SMA20'] = data['Close'].rolling(window=20).mean()
+    data['SMA50'] = data['Close'].rolling(window=50).mean()
+
+    fig2, ax2 = plt.subplots()
+    ax2.plot(data['Close'], label='Close', alpha=0.5)
+    ax2.plot(data['SMA20'], label='SMA 20', color='orange')
+    ax2.plot(data['SMA50'], label='SMA 50', color='green')
+    ax2.set_title(f"{company} - SMA")
+    ax2.legend()
+    st.pyplot(fig2)
+
     st.markdown("---")
